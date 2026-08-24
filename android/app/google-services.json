@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "446399565442",
+    "project_id": "khadamat-d9a5a",
+    "storage_bucket": "khadamat-d9a5a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446399565442:android:0e6ae259b1143dad3bee9b",
+        "android_client_info": {
+          "package_name": "com.example.flutter_product1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJar3qUks5FGEwdf3Mk_Y-8RsJLsKCIuQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
