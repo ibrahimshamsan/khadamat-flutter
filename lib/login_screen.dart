@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ✅ دالة تسجيل الدخول مع Firebase
+  //  دالة تسجيل الدخول مع Firebase
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
             'uid': userCredential.user!.uid,
           }, SetOptions(merge: true));
 
-      _showSnackBar('تم تسجيل الدخول بنجاح ✅', Colors.green);
+      _showSnackBar('تم تسجيل الدخول بنجاح ', Colors.green);
 
       // TODO: انتقل للصفحة الرئيسية بعد تسجيل الدخول
       // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
@@ -69,9 +69,9 @@ class _LoginScreenState extends State<LoginScreen> {
         default:
           errorMessage = 'حدث خطأ: ${e.message}';
       }
-      _showSnackBar('❌ $errorMessage', Colors.red);
+      _showSnackBar(' $errorMessage', Colors.red);
     } catch (e) {
-      _showSnackBar('❌ حدث خطأ غير متوقع: $e', Colors.red);
+      _showSnackBar(' حدث خطأ غير متوقع: $e', Colors.red);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -218,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.gradMid.withOpacity(0.4),
+                            color: AppColors.gradMid.withValues(alpha: 0.4),
                             blurRadius: 18,
                             offset: const Offset(0, 8),
                           ),
@@ -257,7 +257,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Divider(color: Colors.white.withOpacity(0.2)),
+                          child: Divider(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 12),
@@ -267,7 +269,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         Expanded(
-                          child: Divider(color: Colors.white.withOpacity(0.2)),
+                          child: Divider(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
                         ),
                       ],
                     ),
@@ -341,22 +345,24 @@ class _LoginScreenState extends State<LoginScreen> {
       cursorColor: AppColors.gradMid,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: AppColors.subtitleGrey.withOpacity(0.6)),
+        hintStyle: TextStyle(
+          color: AppColors.subtitleGrey.withValues(alpha: 0.6),
+        ),
         prefixIcon: Icon(icon, color: AppColors.subtitleGrey),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white.withOpacity(0.06),
+        fillColor: Colors.white.withValues(alpha: 0.06),
         contentPadding: const EdgeInsets.symmetric(
           vertical: 16,
           horizontal: 16,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'splash.dart'; // تأكد من اسم الملف الصحيح
+import 'Splash.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -26,67 +27,99 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     super.dispose();
   }
 
-  // ✅ دالة إنشاء حساب جديد مع Firebase
-Future<void> _createAccount() async {
+  Future<void> _createAccount() async {
     // التحقق من صحة البيانات
     if (!_formKey.currentState!.validate()) return;
 
-    // ✅ بدء التحميل
+    // بدء التحميل
     setState(() => _isLoading = true);
 
     try {
-      // 1️⃣ إنشاء الحساب في Firebase Authentication
-      UserCredential userCredential = await FirebaseAuth.instance
+      // إنشاء الحساب في Firebase Authentication
+      final UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
 
-      // 2️⃣ حفظ البيانات في Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .set({
-            'name': _nameController.text.trim(),
-            'email': _emailController.text.trim(),
-            'uid': userCredential.user!.uid,
-            'createdAt': FieldValue.serverTimestamp(),
-            'role': 'user',
-          });
+      // التأكد من وجود المستخدم
+      final user = userCredential.user;
 
-      // ✅ 3️⃣ إيقاف التحميل (الأهم!)
-      if (mounted) setState(() => _isLoading = false);
+      if (user == null) {
+        throw Exception('لم يتم إنشاء المستخدم');
+      }
 
-      // ✅ 4️⃣ عرض رسالة النجاح
-      _showSnackBar('تم إنشاء الحساب بنجاح 🎉', Colors.green);
-
-      // ✅ 5️⃣ العودة لصفحة تسجيل الدخول
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        if (mounted) Navigator.pop(context);
+      // حفظ بيانات المستخدم في Firestore
+      print('بدأ حفظ Firestore');
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'password': _passwordController.text.trim(),
+        'uid': user.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'role': 'user',
       });
+      print('انتهى حفظ Firestore');
+      //.timeout(const Duration(seconds: 10));
+
+      // إيقاف التحميل
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      // رسالة النجاح
+      _showSnackBar('تم إنشاء الحساب بنجاح', Colors.green);
+
+      // الانتظار قليلاً ثم العودة لتسجيل الدخول
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
     } on FirebaseAuthException catch (e) {
-      // ❌ إيقاف التحميل وعرض الخطأ
-      if (mounted) setState(() => _isLoading = false);
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
 
       String errorMessage;
+
       switch (e.code) {
         case 'email-already-in-use':
           errorMessage = 'البريد الإلكتروني مستخدم بالفعل';
           break;
+
         case 'invalid-email':
           errorMessage = 'البريد الإلكتروني غير صالح';
           break;
+
         case 'weak-password':
           errorMessage = 'كلمة المرور ضعيفة (6 أحرف على الأقل)';
           break;
+
+        case 'network-request-failed':
+          errorMessage = 'تأكد من اتصال الإنترنت';
+          break;
+
         default:
           errorMessage = 'حدث خطأ: ${e.message}';
       }
-      _showSnackBar('❌ $errorMessage', Colors.red);
+
+      _showSnackBar(errorMessage, Colors.red);
+    } on TimeoutException {
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      _showSnackBar(
+        'استغرقت العملية وقتًا طويلًا. تحقق من اتصال Firebase والإنترنت',
+        Colors.orange,
+      );
     } catch (e) {
-      // ❌ إيقاف التحميل وعرض الخطأ العام
-      if (mounted) setState(() => _isLoading = false);
-      _showSnackBar('❌ حدث خطأ غير متوقع: $e', Colors.red);
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      _showSnackBar('حدث خطأ غير متوقع: $e', Colors.red);
     }
   }
 
@@ -122,7 +155,7 @@ Future<void> _createAccount() async {
           width: double.infinity,
           height: double.infinity,
           decoration: const BoxDecoration(
-            gradient: AppColors.bgGradient, // ✅ نفس تدرج الصفحات الأخرى
+            gradient: AppColors.bgGradient, //  نفس تدرج الصفحات الأخرى
           ),
           child: SafeArea(
             child: SingleChildScrollView(
@@ -249,7 +282,7 @@ Future<void> _createAccount() async {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.gradMid.withOpacity(0.4),
+                            color: AppColors.gradMid.withValues(alpha: 0.4),
                             blurRadius: 18,
                             offset: const Offset(0, 8),
                           ),
@@ -354,22 +387,24 @@ Future<void> _createAccount() async {
       cursorColor: AppColors.gradMid,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: AppColors.subtitleGrey.withOpacity(0.6)),
+        hintStyle: TextStyle(
+          color: AppColors.subtitleGrey.withValues(alpha: 0.6),
+        ),
         prefixIcon: Icon(icon, color: AppColors.subtitleGrey),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white.withOpacity(0.06),
+        fillColor: Colors.white.withValues(alpha: 0.06),
         contentPadding: const EdgeInsets.symmetric(
           vertical: 16,
           horizontal: 16,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
